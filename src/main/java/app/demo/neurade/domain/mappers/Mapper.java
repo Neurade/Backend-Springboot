@@ -171,7 +171,8 @@ public class Mapper {
         return CommuneDTO.builder()
                 .id(commune.getId())
                 .name(commune.getFullName())
-                .provinceName(commune.getProvince().getFullName())
+                .code(commune.getCode())
+                .province(toDto(commune.getProvince()))
                 .build();
     }
 
@@ -179,6 +180,7 @@ public class Mapper {
         return ProvinceDTO.builder()
                 .id(province.getId())
                 .name(province.getFullName())
+                .code(province.getCode())
                 .build();
     }
 
