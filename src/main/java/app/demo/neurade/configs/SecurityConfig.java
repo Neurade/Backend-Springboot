@@ -53,7 +53,12 @@ public class SecurityConfig {
         log.info("Configuring CORS with allowed origins: {}", allowedOrigins);
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(allowedOrigins);
+        if (allowedOrigins != null && allowedOrigins.contains("*")) {
+            config.setAllowedOriginPatterns(List.of("*"));
+        } else {
+            config.setAllowedOrigins(allowedOrigins);
+        }
+
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
