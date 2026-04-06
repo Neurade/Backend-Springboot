@@ -99,13 +99,22 @@ public class ChatbotController {
                     "Events: progress, stream, stream_end, status, error"
     )
     @GetMapping(value = "/chat/stream/{jobId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamChat(@PathVariable String jobId) {
+    public SseEmitter streamChat(
+            @Parameter(description = "Chat job ID returned by POST /chat")
+            @PathVariable String jobId
+    ) {
         return chatEventPublisher.register(jobId);
     }
 
     @GetMapping("/chat/job-status/{jobId}")
     @Deprecated
+    @Operation(
+            summary = "Get chat job status",
+            description = "Deprecated endpoint. Retrieve the processing status of a chat job by job ID. Use /chat/stream/{jobId} for real-time progress updates.",
+            deprecated = true
+    )
     public ResponseEntity<?> getChatJobStatus(
+            @Parameter(description = "Chat job ID returned by POST /chat")
             @PathVariable UUID jobId
     ) {
         return ResponseEntity.ok(
@@ -114,7 +123,9 @@ public class ChatbotController {
     }
 
     @GetMapping("/{conversationId}/history")
+    @Operation(summary = "Get chat history", description = "Retrieve message history for a conversation")
     public ResponseEntity<?> getChatHistory(
+            @Parameter(description = "Conversation ID")
             @PathVariable String conversationId
     ) {
         return ResponseEntity.ok(
@@ -123,6 +134,7 @@ public class ChatbotController {
     }
 
     @GetMapping("/conversations")
+    @Operation(summary = "Get user conversations", description = "Retrieve all conversations for the authenticated user")
     public ResponseEntity<?> getUserConversations() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
                 .getContext()

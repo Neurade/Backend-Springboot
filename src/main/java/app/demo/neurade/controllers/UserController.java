@@ -7,6 +7,7 @@ import app.demo.neurade.domain.models.User;
 import app.demo.neurade.security.CustomUserDetails;
 import app.demo.neurade.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,10 @@ public class UserController {
 
     @Operation(summary = "Update user information", description = "Update user profile information")
     @PatchMapping("/profile")
-    public ResponseEntity<?> updateUser(@RequestBody PatchUserRequest req) {
+    public ResponseEntity<?> updateUser(
+            @Parameter(description = "Profile update payload for the authenticated user")
+            @RequestBody PatchUserRequest req
+    ) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userDetails.getUser();
         userService.updateUserInfo(user, req);
@@ -57,13 +61,18 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUser(@PathVariable String userId) {
+    @Operation(summary = "Get user by ID", description = "Retrieve detailed user information by user ID (admin only)")
+    public ResponseEntity<?> getUser(
+            @Parameter(description = "User ID")
+            @PathVariable String userId
+    ) {
         return ResponseEntity.ok(
                 userService.getUserAndInfo(Long.parseLong(userId))
         );
     }
 
     @GetMapping("/profile")
+    @Operation(summary = "Get current user profile", description = "Retrieve detailed profile information of the authenticated user")
     public ResponseEntity<?> getCurrentUserProfile() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userDetails.getUser();
