@@ -1,6 +1,5 @@
 package app.demo.neurade.controllers;
 
-import app.demo.neurade.domain.dtos.requests.ChatRequest;
 import app.demo.neurade.domain.mappers.Mapper;
 import app.demo.neurade.infrastructures.chatbot_llm.ChatEventPublisher;
 import app.demo.neurade.security.CustomUserDetails;
@@ -9,7 +8,6 @@ import app.demo.neurade.services.ChatbotService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -52,14 +50,19 @@ public class ChatbotController {
     )
     public ResponseEntity<?> chat(
             @Parameter(
-                    description = "Chat request payload (JSON)",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ChatRequest.class)
-                    )
+                    description = "AI instance ID"
             )
-            @RequestPart("data") ChatRequest request,
+            @RequestParam("instanceId") UUID instanceId,
+
+            @Parameter(
+                    description = "Conversation ID (optional; omit to start a new conversation)"
+            )
+            @RequestParam(value = "conversationId", required = false) String conversationId,
+
+            @Parameter(
+                    description = "User question"
+            )
+            @RequestParam("question") String question,
 
             @Parameter(
                     description = "Optional uploaded files",
@@ -75,9 +78,9 @@ public class ChatbotController {
 
         UUID jobId = chatbotService.enqueueChat(
                 userDetails.getUser(),
-                request.getInstanceId(),
-                request.getConversationId(),
-                request.getQuestion(),
+                instanceId,
+                conversationId,
+                question,
                 files
         );
 

@@ -5,6 +5,7 @@ import app.demo.neurade.exception.UnauthorizedException;
 import app.demo.neurade.security.CustomUserDetails;
 import app.demo.neurade.security.RequireVerified;
 import app.demo.neurade.services.AssignmentJudgeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequireVerified
 @RequestMapping("/api/v1/assignment")
+@Tag(
+        name = "Assignment",
+        description = "APIs for handling assignment judgement and results"
+)
 public class AssignmentController {
 
     private final AssignmentJudgeService assignmentJudgeService;
