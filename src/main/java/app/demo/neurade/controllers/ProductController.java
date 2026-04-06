@@ -2,7 +2,6 @@ package app.demo.neurade.controllers;
 
 import app.demo.neurade.domain.dtos.requests.AIPackageCreationRequest;
 import app.demo.neurade.domain.dtos.requests.AIPackagePurchaseRequest;
-import app.demo.neurade.domain.dtos.requests.GetInstanceForUserRequest;
 import app.demo.neurade.domain.dtos.requests.ValidateKeyRequest;
 import app.demo.neurade.domain.dtos.requests.ModifyAIPackageInstanceRequest;
 import app.demo.neurade.domain.dtos.requests.AIPackageModificationRequest;
@@ -117,15 +116,15 @@ public class ProductController {
         );
     }
 
-    @Operation(summary = "Get AI package instances for current user", description = "Retrieve AI package instances for the authenticated user in a class")
-    @PostMapping("/ai-package/instance")
+    @Operation(summary = "Get AI package instances for current user", description = "Retrieve AI package instances for the authenticated user, optionally filtered by class ID")
+    @GetMapping("/ai-package/instance")
     public ResponseEntity<?> getAIPackageInstancesForUser(
-            @Parameter(description = "Payload containing class ID to filter instances")
-            @RequestBody GetInstanceForUserRequest req
+            @Parameter(description = "Class ID used to filter instances. If not provided, return personal instances of the requester.")
+            @RequestParam("classId") Long classId
             ) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(
-                aiPackageInstanceService.getInstanceForUser(userDetails.getUser().getId(), req.getClassId())
+                aiPackageInstanceService.getInstanceForUser(userDetails.getUser().getId(), classId)
         );
     }
 
