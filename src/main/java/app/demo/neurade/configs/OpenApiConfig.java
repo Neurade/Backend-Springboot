@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 contact = @Contact(
                         name = "Ceralabs",
-                        url = "https://https://ceralabs.org/"
+                        url = "https://ceralabs.org/"
                 ),
                 description = "OpenApi documentation for Ceralabs",
                 title = "Ceralabs API - V1",
