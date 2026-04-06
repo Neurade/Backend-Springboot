@@ -71,7 +71,7 @@ public class RedisConfig {
 
             @Override
             public Object deserialize(byte[] bytes) throws SerializationException {
-                if (bytes.length == 0) {
+                if (bytes == null || bytes.length == 0) {
                     return null;
                 }
                 try {
