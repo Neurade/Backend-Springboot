@@ -70,8 +70,8 @@ public class AIPackageInstance {
     }
 
     public void deductTokens(Long tokens) {
-        if (tokens <= 0) {
-            throw new IllegalArgumentException("Tokens to deduct must be positive");
+        if (tokens < 0) {
+            throw new IllegalArgumentException("Tokens to deduct must be non-negative");
         }
         log.info("Deducting {} tokens from AIPackageInstance {}", tokens, this.id);
         log.info("Before deduction, remaining tokens: {}", this.remainingToken);

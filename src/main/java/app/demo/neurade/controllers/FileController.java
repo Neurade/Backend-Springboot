@@ -2,6 +2,7 @@ package app.demo.neurade.controllers;
 
 import app.demo.neurade.services.FileService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ public class FileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<?> uploadPfp(
+            @Parameter(description = "Profile picture file")
             @RequestParam("file") MultipartFile file
     ) {
         String fileUrl = fileService.uploadPfp(file);

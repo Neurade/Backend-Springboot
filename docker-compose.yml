@@ -43,7 +43,7 @@ services:
     networks:
       - ceralabs-network
 
-  ceralabs-backend:
+  api:
     build: .
 #    image: bananaonthetree/backend-neurade:0.0.12
     container_name: ceralabs-backend
@@ -83,6 +83,7 @@ services:
       LLM_MODEL: ${LLM_MODEL}
       LLM_VALIDATE_ENDPOINT: ${LLM_VALIDATE_ENDPOINT}
       LLM_QA_ENDPOINT: ${LLM_QA_ENDPOINT}
+      LLM_WS_ENDPOINT: ${LLM_WS_ENDPOINT}
       LLM_ASSIGNMENT_OCR_ENDPOINT: ${LLM_ASSIGNMENT_OCR_ENDPOINT}
       LLM_TOP_K: ${LLM_TOP_K}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS}
@@ -113,13 +114,13 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: neurade-nginx
+    container_name: ceralabs-nginx
     ports:
       - "${NGINX_OUTER_PORT}:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - ceralabs-backend
+      - api
     networks:
       - ceralabs-network
     env_file:

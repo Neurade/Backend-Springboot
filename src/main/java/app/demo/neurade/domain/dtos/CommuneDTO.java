@@ -10,5 +10,6 @@ import lombok.*;
 public class CommuneDTO {
     private Integer id;
     private String name;
-    private String provinceName;
+    private String code;
+    private ProvinceDTO province;
 }

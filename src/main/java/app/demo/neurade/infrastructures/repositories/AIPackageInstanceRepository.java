@@ -21,7 +21,6 @@ public interface AIPackageInstanceRepository extends JpaRepository<AIPackageInst
     @Query("""
         delete from AIPackageInstance a
         where a.classRoom.id = :classId
-          and a.buyer is null
     """)
     int deleteClassroomInstance(@Param("classId") Long classId);
 

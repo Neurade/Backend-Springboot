@@ -68,6 +68,8 @@ llm:
     endpoint: ${LLM_VALIDATE_ENDPOINT}
   qa:
     endpoint: ${LLM_QA_ENDPOINT}
+  ws:
+    endpoint: ${LLM_WS_ENDPOINT}
   assignment-ocr:
     endpoint: ${LLM_ASSIGNMENT_OCR_ENDPOINT}
   timeout: ${LLM_TIMEOUT_SECONDS:180}
@@ -85,7 +87,16 @@ application:
 logging:
   level:
     org.springframework.cache: TRACE
-#    org.springframework.data.redis.cache: TRACE
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+server:
+  forward-headers-strategy: framework
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+    disable-swagger-default-url: true

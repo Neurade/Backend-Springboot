@@ -1,5 +1,6 @@
 package app.demo.neurade.domain.dtos.messages;
 
+import app.demo.neurade.infrastructures.chatbot_llm.responses.WorkflowResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -18,7 +19,8 @@ public class AssignmentMessage implements RabbitMessage {
     private UUID questionId;
     private String errorMessage;
     private MessageStatus status;
-    private String response;
+    private WorkflowResponse response;
+    private UUID instanceId;
 
     @Override
     @JsonIgnore
