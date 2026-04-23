@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface AssignmentJudgeService {
-    Map<String, String> checkAnswers(User user, Map<String, MultipartFile> answers);
+    Map<String, String> checkAnswers(User user, UUID instanceId, Map<String, MultipartFile> answers);
     Map<UUID, String> getJudgementResults(User user, UUID assignmentId);
     void saveJudgement(String judgement, Long studentId, UUID questionId);
     AssignmentMessage getAssignmentJob(UUID jobId);

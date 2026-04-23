@@ -40,7 +40,7 @@ public class AssignmentJudgeServiceImpl implements AssignmentJudgeService {
 
     @Override
     @Transactional
-    public Map<String, String> checkAnswers(User user, Map<String, MultipartFile> answers) {
+    public Map<String, String> checkAnswers(User user, UUID instanceId, Map<String, MultipartFile> answers) {
         Map<String, String> results = new HashMap<>();
         for (var entry : answers.entrySet()) {
             UUID questionId = UUID.fromString(entry.getKey());
@@ -57,6 +57,7 @@ public class AssignmentJudgeServiceImpl implements AssignmentJudgeService {
                     .apiKey(apiKey)
                     .questionId(questionId)
                     .status(MessageStatus.QUEUED)
+                    .instanceId(instanceId)
                     .build();
 
             jobStatusService.saveJob(job);

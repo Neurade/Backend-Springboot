@@ -99,8 +99,8 @@ public class UserAIInstanceUsage {
     }
 
     public void useToken(long num) {
-        if (num <= 0) {
-            throw new IllegalArgumentException("token number must be greater than zero");
+        if (num < 0) {
+            throw new IllegalArgumentException("token number must be non-negative");
         }
         log.info("Using {} tokens for user {} on instance {}", num, user.getId(), instance.getId());
         this.tokenUsed += num;

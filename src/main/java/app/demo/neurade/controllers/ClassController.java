@@ -12,6 +12,7 @@ import app.demo.neurade.security.CustomUserDetails;
 import app.demo.neurade.services.AssignmentService;
 import app.demo.neurade.services.ClassService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -70,11 +71,11 @@ public class ClassController {
                     description = "Forbidden - insufficient role"
             )
     })
-
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping()
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
     public ResponseEntity<?> createClass(
+            @Parameter(description = "Class creation payload")
             @RequestBody ClassCreationRequest req
     ) {
         CustomUserDetails userDetails =
@@ -96,6 +97,7 @@ public class ClassController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
+    @Operation(summary = "Get managed classes", description = "Retrieve all classes managed by the authenticated user")
     public ResponseEntity<?> getAllClassesUnderManagement() {
         CustomUserDetails userDetails =
                 (CustomUserDetails) SecurityContextHolder
@@ -113,8 +115,11 @@ public class ClassController {
 
     @PostMapping("/{classId}/assignment")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
+    @Operation(summary = "Create assignment", description = "Create a new assignment in a class")
     public ResponseEntity<?> createAssignment(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId,
+            @Parameter(description = "Assignment creation payload")
             @RequestBody AssignmentCreationRequest req
             ) {
         AssignmentDTO dto = assignmentService.createAssignment(
@@ -131,9 +136,13 @@ public class ClassController {
 
     @PostMapping("/{classId}/assignment/{assignmentId}/question")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
+    @Operation(summary = "Add assignment question files", description = "Upload files and generate questions for an assignment")
     public ResponseEntity<?> addFileToAssignment(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId,
+            @Parameter(description = "Assignment ID")
             @PathVariable("assignmentId") UUID assignmentId,
+            @Parameter(description = "Question source files")
             @RequestPart("files") List<MultipartFile> files
     ) {
         List<AssignmentQuestionDTO> dtos = assignmentService.createAndProcessPDF(assignmentId, files);
@@ -141,8 +150,11 @@ public class ClassController {
     }
 
     @GetMapping("/{classId}/assignment/{assignmentId}")
+    @Operation(summary = "Get assignment by ID", description = "Retrieve assignment details for a class")
     public ResponseEntity<?> getAssignment(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId,
+            @Parameter(description = "Assignment ID")
             @PathVariable("assignmentId") UUID assignmentId
     ) {
         AssignmentDTO dto = classService.getAssignment(
@@ -152,7 +164,9 @@ public class ClassController {
     }
 
     @GetMapping("/{classId}")
+    @Operation(summary = "Get class by ID", description = "Retrieve class details by class ID")
     public ResponseEntity<?> getClass(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId
     ) {
         Classroom classroom = classService.getClass(
@@ -162,7 +176,9 @@ public class ClassController {
     }
 
     @GetMapping("/{classId}/participants")
+    @Operation(summary = "Get class participants", description = "Retrieve all participants in a class")
     public ResponseEntity<?> getClassParticipants(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId
     ) {
         List<?> participants = classService.getParticipantsInClass(
@@ -173,8 +189,11 @@ public class ClassController {
 
     @PostMapping("/{classId}/invite")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
+    @Operation(summary = "Invite users to class", description = "Add users to a class by providing user IDs")
     public ResponseEntity<?> inviteUsersToClass(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId,
+            @Parameter(description = "List of user IDs to invite")
             @RequestBody List<Long> inviteIds
     ) {
         classService.addParticipants(Long.parseLong(classId), inviteIds);
@@ -187,8 +206,11 @@ public class ClassController {
 
     @PostMapping("/{classId}/instance-usage-limit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZATION', 'TEACHER')")
+    @Operation(summary = "Set class instance usage limit", description = "Configure AI instance usage limits for users in a class")
     public ResponseEntity<?> setClassInstanceUsageLimit(
+            @Parameter(description = "Class ID")
             @PathVariable("classId") String classId,
+            @Parameter(description = "Instance usage limit payload")
             @RequestBody UserInstanceUsageCreationRequest req
     ) {
         classService.setClassInstanceUsageLimit(
@@ -203,6 +225,7 @@ public class ClassController {
     }
 
     @GetMapping("/all")
+    @Operation(summary = "Get all classes", description = "Retrieve all classes in the system")
     public ResponseEntity<?> getAllClasses() {
         return ResponseEntity.ok(
                 classService.getAllClasses()
