@@ -120,7 +120,7 @@ public class ProductController {
     @GetMapping("/ai-package/instance")
     public ResponseEntity<?> getAIPackageInstancesForUser(
             @Parameter(description = "Class ID used to filter instances. If not provided, return personal instances of the requester.")
-            @RequestParam("classId") Long classId
+            @RequestParam(value = "classId", required = false) Long classId
             ) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(
