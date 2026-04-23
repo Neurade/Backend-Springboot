@@ -36,16 +36,16 @@ services:
       - "15673:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 60s
+      timeout: 15s
+      retries: 3
       start_period: 90s
     networks:
       - ceralabs-network
 
   api:
     build: .
-#    image: bananaonthetree/backend-neurade:0.0.12
+#    image: bananaonthetree/ceralabs-backend:1.0.1
     container_name: ceralabs-backend
     restart: always
     ports:
@@ -76,6 +76,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      CONCURRENT_CONNECTIONS: ${CONCURRENT_CONNECTIONS}
+      MAX_CONCURRENT_CONNECTIONS: ${MAX_CONCURRENT_CONNECTIONS}
 
       # ===== LLM =====
       LLM_PROVIDER: ${LLM_PROVIDER}

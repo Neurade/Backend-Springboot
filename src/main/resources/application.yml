@@ -46,8 +46,8 @@ spring:
     password: ${RABBITMQ_PASSWORD}
     listener:
       simple:
-        concurrency: 2
-        max-concurrency: 5
+        concurrency: ${CONCURRENT_CONNECTIONS}
+        max-concurrency: ${MAX_CONCURRENT_CONNECTIONS}
         prefetch: 1
 
 minio:
