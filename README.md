@@ -242,10 +242,6 @@ cp .env.example .env
 | `MINIO_BUCKET_ASSIGNMENT` | Bucket for assignment files | `CeraLabs-assignment` |
 | `REDIS_HOST` | Redis host | `redis` (Docker) / `localhost` (local) |
 | `REDIS_PORT` | Redis port | `6379` |
-| `RABBITMQ_HOST` | RabbitMQ host | `rabbitmq` (Docker) / `localhost` (local) |
-| `RABBITMQ_PORT` | RabbitMQ AMQP port | `5672` |
-| `RABBITMQ_USERNAME` | RabbitMQ username | `guest` |
-| `RABBITMQ_PASSWORD` | RabbitMQ password | `guest` |
 | `LLM_PROVIDER` | LLM provider name | `GEMINI` |
 | `LLM_API_KEY` | LLM provider API key | — |
 | `LLM_MODEL` | LLM model identifier | `gemini-2.5-flash` |
@@ -278,7 +274,6 @@ cp .env.example .env
 - Maven 3.9+ (or use the included `./mvnw` wrapper)
 - PostgreSQL 16 running locally (or via Docker)
 - Redis running locally
-- RabbitMQ running locally
 - MinIO running locally or accessible remotely
 
 ### Steps
@@ -317,7 +312,7 @@ export $(grep -v '^#' .env | xargs)
 
 ## How to Run (Docker)
 
-All services (PostgreSQL, Redis, RabbitMQ, and the app) are orchestrated via Docker Compose.
+All services (PostgreSQL, Redis, and the app) are orchestrated via Docker Compose.
 
 ### Prerequisites
 
@@ -330,7 +325,7 @@ All services (PostgreSQL, Redis, RabbitMQ, and the app) are orchestrated via Doc
 
 ```bash
 cp .env.example .env
-# Edit .env — use service names as hostnames (DB_HOST=postgres, REDIS_HOST=redis, RABBITMQ_HOST=rabbitmq)
+# Edit .env — use service names as hostnames (DB_HOST=postgres, REDIS_HOST=redis)
 ```
 
 2. **Build and start all services:**
