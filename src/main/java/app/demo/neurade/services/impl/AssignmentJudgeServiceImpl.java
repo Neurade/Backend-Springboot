@@ -1,6 +1,5 @@
 package app.demo.neurade.services.impl;
 
-import app.demo.neurade.configs.RabbitMQConfig;
 import app.demo.neurade.domain.models.StudentAnswer;
 import app.demo.neurade.domain.models.User;
 import app.demo.neurade.domain.models.assignment.AssignmentQuestion;
@@ -16,8 +15,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +33,7 @@ public class AssignmentJudgeServiceImpl implements AssignmentJudgeService {
     private final FileService fileService;
     private final StudentAnswerRepository studentAnswerRepository;
     private final JobStatusService jobStatusService;
-    private final RabbitTemplate rabbitTemplate;
+    private final ApplicationEventPublisher eventPublisher;
     @Value("${llm.api-key}")
     private String apiKey;
 
@@ -64,11 +63,7 @@ public class AssignmentJudgeServiceImpl implements AssignmentJudgeService {
             log.info("Created AssignmentJob with ID: {} for user ID: {} and question ID: {}", newJobId, user.getId(), questionId);
             results.put(entry.getKey(), newJobId);
 
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.ASSIGNMENT_EXCHANGE,
-                    RabbitMQConfig.ASSIGNMENT_ROUTING_KEY,
-                    job
-            );
+            eventPublisher.publishEvent(job);
         }
         return results;
     }

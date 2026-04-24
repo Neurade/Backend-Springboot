@@ -1,6 +1,5 @@
 package app.demo.neurade.services.impl;
 
-import app.demo.neurade.configs.RabbitMQConfig;
 import app.demo.neurade.domain.dtos.ChatHistoryEntryDTO;
 import app.demo.neurade.domain.dtos.ChatPrepareDTO;
 import app.demo.neurade.domain.mappers.Mapper;
@@ -16,7 +15,7 @@ import app.demo.neurade.services.ChatbotPersistenceService;
 import app.demo.neurade.services.JobStatusService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +33,7 @@ public class ChatbotServiceImpl implements ChatbotService {
     private final ConversationRepository conversationRepository;
     private final Mapper mapper;
     private final JobStatusService jobStatusService;
-    private final RabbitTemplate rabbitTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public List<ChatHistoryEntryDTO> getChatHistory(String conversationId) {
@@ -81,11 +80,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         chatJob.setStatus(MessageStatus.QUEUED);
         jobStatusService.saveJob(chatJob);
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.CHATBOT_EXCHANGE,
-                RabbitMQConfig.CHATBOT_ROUTING_KEY,
-                chatJob
-        );
+        eventPublisher.publishEvent(chatJob);
 
         log.info("Enqueued ChatbotChatJob with ID: {}", chatJob.getId());
         return chatJob.getId();

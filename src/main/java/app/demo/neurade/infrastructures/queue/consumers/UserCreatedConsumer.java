@@ -1,11 +1,11 @@
-package app.demo.neurade.services.consumers;
+package app.demo.neurade.infrastructures.queue.consumers;
 
-import app.demo.neurade.configs.RabbitMQConfig;
 import app.demo.neurade.domain.dtos.messages.UserCreatedMessage;
 import app.demo.neurade.services.AIPackageInstanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +15,8 @@ public class UserCreatedConsumer {
 
     private final AIPackageInstanceService aiPackageInstanceService;
 
-    @RabbitListener(queues = RabbitMQConfig.USER_CREATED_QUEUE)
+    @Async
+    @EventListener
     public void handleUserCreated(UserCreatedMessage message) {
         log.info("Received user created message for user: {} (source: {})",
                 message.getEmail(), message.getSource());

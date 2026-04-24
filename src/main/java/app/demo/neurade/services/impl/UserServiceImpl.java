@@ -20,13 +20,12 @@ import app.demo.neurade.security.RegisterRequest;
 import app.demo.neurade.services.UserService;
 import app.demo.neurade.services.UserPersistenceService;
 import app.demo.neurade.services.UserAndInfoParams;
-import app.demo.neurade.configs.RabbitMQConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EntityManager entityManager;
     private final Mapper mapper;
-    private final RabbitTemplate rabbitTemplate;
+    private final ApplicationEventPublisher eventPublisher;
     private final UserInformationMapper userInformationMapper;
     private final UserPersistenceService userPersistenceService;
 
@@ -184,21 +183,13 @@ public class UserServiceImpl implements UserService {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        rabbitTemplate.convertAndSend(
-                                RabbitMQConfig.USER_CREATED_EXCHANGE,
-                                RabbitMQConfig.USER_CREATED_ROUTING_KEY,
-                                message
-                        );
-                        log.info("Published user created message for user: {} to RabbitMQ (after commit)", user.getEmail());
+                        eventPublisher.publishEvent(message);
+                        log.info("Queued user created message for user: {} (after commit)", user.getEmail());
                     }
                 });
             } else {
-                rabbitTemplate.convertAndSend(
-                        RabbitMQConfig.USER_CREATED_EXCHANGE,
-                        RabbitMQConfig.USER_CREATED_ROUTING_KEY,
-                        message
-                );
-                log.info("Published user created message for user: {} to RabbitMQ (no transaction)", user.getEmail());
+                eventPublisher.publishEvent(message);
+                log.info("Queued user created message for user: {} (no transaction)", user.getEmail());
             }
         } catch (Exception e) {
             log.error("Failed to publish user created message for user: {}", user.getEmail(), e);
