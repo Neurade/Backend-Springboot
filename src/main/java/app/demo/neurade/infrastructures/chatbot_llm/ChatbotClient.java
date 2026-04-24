@@ -36,18 +36,20 @@ public class ChatbotClient {
 
     public WorkflowResponse callWorkflow(
             List<WorkflowRequest.Query> queries,
-            String apiKey,
-            List<String> assetUrls
+            List<String> assetUrls,
+            String workflowId,
+            WorkflowType type
     ) {
         WorkflowRequest request = WorkflowRequest.builder()
-                .apiKey(apiKey)
-                .model(model)
                 .files(assetUrls)
                 .queries(queries)
                 .build();
 
         try {
+            String uri = type == WorkflowType.CHAT ? "/{workflowId}/normal" : "/{workflowId}/scoring";
+            log.info("Calling LLM workflow at URI: \"{}\" with workflow ID: {}", uri, workflowId);
             WorkflowResponse response = webClient.post()
+                    .uri(uri, workflowId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(request)
                     .retrieve()

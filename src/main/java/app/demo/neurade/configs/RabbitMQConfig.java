@@ -5,6 +5,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,6 +28,15 @@ public class RabbitMQConfig {
     public static final String USER_CREATED_EXCHANGE = "user.created.exchange";
     public static final String USER_CREATED_ROUTING_KEY = "user.created";
 
+    @Value("${spring.rabbitmq.listener.simple.concurrency}")
+    private int listenerConcurrency;
+
+    @Value("${spring.rabbitmq.listener.simple.max-concurrency}")
+    private int listenerMaxConcurrency;
+
+    @Value("${spring.rabbitmq.listener.simple.prefetch}")
+    private int listenerPrefetch;
+
     @Bean
     public JacksonJsonMessageConverter messageConverter() {
         return new JacksonJsonMessageConverter();
@@ -39,6 +49,9 @@ public class RabbitMQConfig {
     ) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
+        factory.setConcurrentConsumers(listenerConcurrency);
+        factory.setMaxConcurrentConsumers(listenerMaxConcurrency);
+        factory.setPrefetchCount(listenerPrefetch);
         factory.setMessageConverter(messageConverter);
         factory.setDefaultRequeueRejected(false);
         return factory;

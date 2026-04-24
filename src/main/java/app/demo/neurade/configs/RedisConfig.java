@@ -19,13 +19,20 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class RedisConfig {
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(2))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer()));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
@@ -38,6 +45,10 @@ public class RedisConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        ObjectMapper plainMapper = new ObjectMapper();
+        plainMapper.registerModule(new JavaTimeModule());
+        plainMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfBaseType(Object.class)
@@ -60,13 +71,18 @@ public class RedisConfig {
 
             @Override
             public Object deserialize(byte[] bytes) throws SerializationException {
-                if (bytes.length == 0) {
+                if (bytes == null || bytes.length == 0) {
                     return null;
                 }
                 try {
                     return mapper.readValue(bytes, Object.class);
                 } catch (Exception e) {
-                    throw new SerializationException("Could not deserialize: " + e.getMessage(), e);
+                    try {
+                        // Backward compatibility for Redis values written without polymorphic type metadata.
+                        return plainMapper.readValue(bytes, Object.class);
+                    } catch (Exception fallbackException) {
+                        throw new SerializationException("Could not deserialize: " + fallbackException.getMessage(), fallbackException);
+                    }
                 }
             }
         };

@@ -1,14 +1,13 @@
 package app.demo.neurade.controllers;
 
-import app.demo.neurade.domain.dtos.requests.ChatRequest;
 import app.demo.neurade.domain.mappers.Mapper;
+import app.demo.neurade.infrastructures.chatbot_llm.ChatEventPublisher;
 import app.demo.neurade.security.CustomUserDetails;
 import app.demo.neurade.security.RequireVerified;
 import app.demo.neurade.services.ChatbotService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,7 @@ public class ChatbotController {
 
     private final ChatbotService chatbotService;
     private final Mapper mapper;
+    private final ChatEventPublisher chatEventPublisher;
 
     @Operation(
             summary = "Chat with AI chatbot",
@@ -49,14 +50,19 @@ public class ChatbotController {
     )
     public ResponseEntity<?> chat(
             @Parameter(
-                    description = "Chat request payload (JSON)",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ChatRequest.class)
-                    )
+                    description = "AI instance ID"
             )
-            @RequestPart("data") ChatRequest request,
+            @RequestParam("instanceId") UUID instanceId,
+
+            @Parameter(
+                    description = "Conversation ID (optional; omit to start a new conversation)"
+            )
+            @RequestParam(value = "conversationId", required = false) String conversationId,
+
+            @Parameter(
+                    description = "User question"
+            )
+            @RequestParam("question") String question,
 
             @Parameter(
                     description = "Optional uploaded files",
@@ -72,9 +78,9 @@ public class ChatbotController {
 
         UUID jobId = chatbotService.enqueueChat(
                 userDetails.getUser(),
-                request.getInstanceId(),
-                request.getConversationId(),
-                request.getQuestion(),
+                instanceId,
+                conversationId,
+                question,
                 files
         );
 
@@ -86,8 +92,29 @@ public class ChatbotController {
         );
     }
 
+    @Operation(
+            summary = "Stream chat progress via SSE",
+            description = "Open an SSE connection to receive real-time streaming events for a chat job. " +
+                    "Call this endpoint right after POST /chat with the returned jobId. " +
+                    "Events: progress, stream, stream_end, status, error"
+    )
+    @GetMapping(value = "/chat/stream/{jobId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamChat(
+            @Parameter(description = "Chat job ID returned by POST /chat")
+            @PathVariable String jobId
+    ) {
+        return chatEventPublisher.register(jobId);
+    }
+
     @GetMapping("/chat/job-status/{jobId}")
+    @Deprecated
+    @Operation(
+            summary = "Get chat job status",
+            description = "Deprecated endpoint. Retrieve the processing status of a chat job by job ID. Use /chat/stream/{jobId} for real-time progress updates.",
+            deprecated = true
+    )
     public ResponseEntity<?> getChatJobStatus(
+            @Parameter(description = "Chat job ID returned by POST /chat")
             @PathVariable UUID jobId
     ) {
         return ResponseEntity.ok(
@@ -96,7 +123,9 @@ public class ChatbotController {
     }
 
     @GetMapping("/{conversationId}/history")
+    @Operation(summary = "Get chat history", description = "Retrieve message history for a conversation")
     public ResponseEntity<?> getChatHistory(
+            @Parameter(description = "Conversation ID")
             @PathVariable String conversationId
     ) {
         return ResponseEntity.ok(
@@ -105,6 +134,7 @@ public class ChatbotController {
     }
 
     @GetMapping("/conversations")
+    @Operation(summary = "Get user conversations", description = "Retrieve all conversations for the authenticated user")
     public ResponseEntity<?> getUserConversations() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
                 .getContext()

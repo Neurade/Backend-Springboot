@@ -186,7 +186,7 @@ Interactive docs available at: `http://localhost:8080/swagger-ui.html`
 
 | Method | Path | Description | Auth |
 |---|---|---|---|
-| POST | `/chat` | Send a message (multipart: JSON data + optional files) | Required |
+| POST | `/chat` | Send a message (multipart form-data: `instanceId`, `conversationId`, `question` + optional `files`) | Required |
 | GET | `/chat/job-status/{jobId}` | Poll chat job status | Required |
 | GET | `/{conversationId}/history` | Get conversation history | Required |
 | GET | `/conversations` | Get all conversations for current user | Required |
@@ -251,6 +251,7 @@ cp .env.example .env
 | `LLM_MODEL` | LLM model identifier | `gemini-2.5-flash` |
 | `LLM_VALIDATE_ENDPOINT` | Endpoint to validate API key | `http://host:port/api/v1/validate-key` |
 | `LLM_QA_ENDPOINT` | Endpoint for chatbot Q&A workflow | `http://host:port/workflow` |
+| `LLM_WS_ENDPOINT` | WebSocket endpoint for streaming responses | `ws://host:port/ws` |
 | `LLM_ASSIGNMENT_OCR_ENDPOINT` | Endpoint for assignment OCR extraction | `http://host:port/extract` |
 | `LLM_TOP_K` | Top-K results for RAG retrieval | `5` |
 | `LLM_TIMEOUT_SECONDS` | LLM call timeout in seconds | `120` |
